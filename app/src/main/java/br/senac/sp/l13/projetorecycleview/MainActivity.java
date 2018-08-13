@@ -1,15 +1,29 @@
 package br.senac.sp.l13.projetorecycleview;
 
+import android.app.ProgressDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String URL_DATA = "http://gateway.marvel.com/v1/public/comics?apikey=680f0bd56a7cac2ef29a139e10839773";
     private RecyclerView recyclerView;
     private RecyclerView.Adapter adapter;
 
@@ -26,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
         listaItems = new ArrayList<>();
 
+        /*
+        utilizado para  teste de carregamento do cardView e recycleView
         for (int i = 0; i <= 10; i++) {
             ListaItem listaItem = new ListaItem(
                     "Título " + (i + 1),
@@ -38,6 +54,62 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new MyAdapter(listaItems,this);
 
-        recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(adapter);*/
+
+        loadRecycleViewData();
+
+    }
+
+    //Implementado a barra de progresso
+    private void loadRecycleViewData() {
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Carregando dados...");
+        progressDialog.show();
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET,
+                URL_DATA,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        progressDialog.dismiss();
+                        try {
+                            JSONObject jsonObject = new JSONObject(s);
+                            JSONArray array = jsonObject.getJSONArray("heroes");
+
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONObject o = array.getJSONObject(i);
+                                ListaItem item = new ListaItem(
+                                        o.getString("name"),
+                                        o.getString("about"),
+                                        o.getString("image")
+                                );
+                                listaItems.add(item);
+                            }
+                            adapter = new MyAdapter(listaItems, getApplicationContext());
+                            recyclerView.setAdapter(adapter);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                progressDialog.dismiss();
+                Toast.makeText(getApplicationContext(), volleyError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
     }
 }
+
+
+
+
+
+
+
+
+
