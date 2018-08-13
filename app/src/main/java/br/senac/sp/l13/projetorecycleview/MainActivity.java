@@ -23,7 +23,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String URL_DATA = "http://gateway.marvel.com/v1/public/comics?apikey=680f0bd56a7cac2ef29a139e10839773";
+    private static final String URL_DATA = "https://simplifiedcoding.net/demos/marvel/";
     private RecyclerView recyclerView;
     private RecyclerView.Adapter adapter;
 
@@ -74,14 +74,19 @@ public class MainActivity extends AppCompatActivity {
                         progressDialog.dismiss();
                         try {
                             JSONObject jsonObject = new JSONObject(s);
-                            JSONArray array = jsonObject.getJSONArray("heroes");
+                            JSONArray array = jsonObject.getJSONArray(s);
 
                             for (int i = 0; i < array.length(); i++) {
                                 JSONObject o = array.getJSONObject(i);
                                 ListaItem item = new ListaItem(
                                         o.getString("name"),
-                                        o.getString("about"),
-                                        o.getString("image")
+                                        o.getString("realname"),
+                                        o.getString("team"),
+                                        o.getString("firstappearance"),
+                                        o.getString("createdby"),
+                                        o.getString("publisher"),
+                                        o.getString("imageurl"),
+                                        o.getString("bio")
                                 );
                                 listaItems.add(item);
                             }
